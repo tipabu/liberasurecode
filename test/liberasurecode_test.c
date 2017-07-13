@@ -1538,6 +1538,28 @@ static void test_jerasure_rs_cauchy_init_failure()
     assert(-EBACKENDINITERR == desc);
 }
 
+static void test_flat_xor_hd3_init_failure()
+{
+    struct ec_args bad_args[] = {
+        {.k = 1, .m = 5, .hd=3},
+        {.k = 5, .m = 1, .hd=3},
+        {.k = 4, .m = 4, .hd=3},
+        {.k = 1, .m = 3, .hd=3},
+        {.k = 4, .m = 3, .hd=3},
+    };
+
+    for (int i = 0; i < sizeof(bad_args)/sizeof(bad_args[0]); ++i) {
+        int desc = -1;
+        desc = liberasurecode_instance_create(
+            EC_BACKEND_FLAT_XOR_HD, &bad_args[i]);
+        if (-EBACKENDNOTAVAIL == desc) {
+            fprintf (stderr, "Backend library not available!\n");
+            return;
+        }
+        assert(-EBACKENDINITERR == desc);
+    }
+}
+
 static void test_simple_encode_decode(const ec_backend_id_t be_id,
                                      struct ec_args *args)
 {
@@ -1916,6 +1938,10 @@ struct testcase testcases[] = {
     {"test_verify_stripe_metadata_frag_idx_invalid",
         test_verify_stripe_metadata_frag_idx_invalid,
         EC_BACKEND_FLAT_XOR_HD, CHKSUM_CRC32,
+        .skip = false},
+    {"test_flat_xor_hd3_init_failure",
+        test_flat_xor_hd3_init_failure,
+        EC_BACKENDS_MAX, 0,
         .skip = false},
     // Jerasure RS Vand backend tests
     {"create_and_destroy_backend",
